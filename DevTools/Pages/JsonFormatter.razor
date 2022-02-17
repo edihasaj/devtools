@@ -12,20 +12,20 @@
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
     string text;
     string result;
 
-    JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
+    readonly JsonSerializerOptions indentedSerializerOptions = new() {WriteIndented = true};
 
     void Format(bool indented)
     {
         try
         {
-            var doc = JsonDocument.Parse(text, new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = System.Text.Json.JsonCommentHandling.Skip, MaxDepth = 1000 });
+            var doc = JsonDocument.Parse(text, new JsonDocumentOptions {AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 1000});
             result = JsonSerializer.Serialize(doc, indented ? indentedSerializerOptions : null);
         }
         catch (Exception ex)
@@ -33,4 +33,5 @@
             result = ex.Message;
         }
     }
+
 }

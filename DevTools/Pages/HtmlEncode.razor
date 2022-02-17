@@ -1,16 +1,17 @@
 ﻿@page "/html-encode"
+@using System.Text.Encodings.Web
 
 <h1>HTML Encode / Decode</h1>
 
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Encode">Encode</button>
+    <button class="btn btn-primary" @onclick="Encode">Encode</button>
 </div>
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
@@ -19,6 +20,7 @@
 
     void Encode()
     {
-        result = System.Text.Encodings.Web.HtmlEncoder.Default.Encode(text ?? "");
+        result = HtmlEncoder.Default.Encode(text ?? "");
     }
+
 }

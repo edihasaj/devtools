@@ -1,10 +1,8 @@
 ﻿@page "/run-gitlab-pipelines"
-@using System.Threading
 @using Meziantou.GitLab
-@using System.Text.RegularExpressions
-@using System.Globalization
-@using System.Diagnostics
+@using System.Threading
 @using System.Text.Json
+@using System.Diagnostics
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 
@@ -13,42 +11,42 @@
 <EditForm Model="form" OnValidSubmit="OnSubmit">
     <div class="form-group">
         <label>GitLab project url</label>
-        <InputText class="form-control" type="text" @bind-Value="form.ProjectUrl" disabled="@isProcessing" />
+        <InputText class="form-control" type="text" @bind-Value="form.ProjectUrl" disabled="@isProcessing"/>
     </div>
 
     <div class="form-group">
         <label>Reference (branch / tag / sha)</label>
-        <InputText class="form-control" type="text" @bind-Value="form.Reference" disabled="@isProcessing" />
+        <InputText class="form-control" type="text" @bind-Value="form.Reference" disabled="@isProcessing"/>
     </div>
 
     <div class="form-group">
         <label>Variables (name=value)</label>
-        <InputTextArea class="form-control" type="text" @bind-Value="form.Variables" disabled="@isProcessing" rows=3 />
+        <InputTextArea class="form-control" type="text" @bind-Value="form.Variables" disabled="@isProcessing" rows="3"/>
     </div>
 
     <div class="form-group">
         <label>GitLab access token (<a href="@GetGenerateTokenUrl()" target="_blank">generate</a>)</label>
-        <InputText class="form-control" type="password" @bind-Value="form.GitLabToken" disabled="@isProcessing" />
+        <InputText class="form-control" type="password" @bind-Value="form.GitLabToken" disabled="@isProcessing"/>
     </div>
 
     <div class="form-group">
         <label>Number of parallel pipelines</label>
-        <InputNumber class="form-control" @bind-Value="form.ParallelJobs" min="1" max="20" />
+        <InputNumber class="form-control" @bind-Value="form.ParallelJobs" min="1" max="20"/>
     </div>
 
     @if (!isProcessing)
     {
-        <button type="submit" class="btn btn-primary">Start</button>
+        <button type="submit" class="btn btn-success">Start</button>
     }
     else
     {
-        <button type="submit" class="btn btn-secondary">Stop</button>
+        <button type="submit" class="btn btn-danger">Stop</button>
     }
 </EditForm>
 
 @if (pipelines.Count > 0)
 {
-    <div>Total pipelines: @pipelines.Count<br />Failed jobs: @pipelines.Where(pipeline => pipeline.Status is PipelineStatus.Failed).Count()</div>
+    <div>Total pipelines: @pipelines.Count<br/>Failed jobs: @pipelines.Where(pipeline => pipeline.Status is PipelineStatus.Failed).Count()</div>
 
     <ul>
         @foreach (var pipeline in pipelines.Where(job => job.Status is PipelineStatus.Created or PipelineStatus.Pending or PipelineStatus.Running).OrderByDescending(job => job.CreatedAt))
@@ -81,7 +79,7 @@
         var lastRun = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "gitlab_pipeline_lastRun");
         if (lastRun != null)
         {
-            form = JsonSerializer.Deserialize<RetryGitLabJobForm>(lastRun) ?? new();
+            form = JsonSerializer.Deserialize<RetryGitLabJobForm>(lastRun) ?? new RetryGitLabJobForm();
         }
     }
 
@@ -124,11 +122,11 @@
                     return;
                 }
 
-                var variables = from entry in form.Variables.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                let parts = entry.Split('=')
-                                select new PipelineVariableCreate(parts[0], parts[1]);
+                var variables = from entry in form.Variables.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries)
+                    let parts = entry.Split('=')
+                    select new PipelineVariableCreate(parts[0], parts[1]);
 
-                cts = new();
+                cts = new CancellationTokenSource();
                 var pipelines = this.pipelines = new List<Pipeline>();
                 isProcessing = true;
                 StateHasChanged();
@@ -138,7 +136,6 @@
             catch (Exception ex)
             {
                 errorMessage = ex.ToString();
-                return;
             }
         }
     }
@@ -159,7 +156,7 @@
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                // Refresh in-progress pipelines
+    // Refresh in-progress pipelines
                 var inProgressJobs = 0;
                 for (var i = 0; i < pipelines.Count; i++)
                 {
@@ -173,7 +170,7 @@
                     }
                 }
 
-                // Start new jobs
+    // Start new jobs
                 for (var i = inProgressJobs; i < form.ParallelJobs; i++)
                 {
                     try
@@ -196,20 +193,26 @@
         }
     }
 
-    private static bool IsCompleted(Pipeline pipeline) => pipeline.Status is PipelineStatus.Canceled or PipelineStatus.Failed or PipelineStatus.Success;
+    private static bool IsCompleted(Pipeline pipeline)
+    {
+        return pipeline.Status is PipelineStatus.Canceled or PipelineStatus.Failed or PipelineStatus.Success;
+    }
 
     private RenderFragment<Pipeline> RenderPipeline
     {
         get
         {
             return pipeline =>
-    @<a href="@pipeline.WebUrl" target="_blank">
-        <span class="@GetClassName(pipeline)">
-            <svg><use href="/gitlab-icons.svg#@GetIconName(pipeline)"></use></svg>
-        </span>
-        <span>@pipeline.Id</span>
-    </a>
-    ;
+                @<a href="@pipeline.WebUrl" target="_blank">
+                    <span class="@GetClassName(pipeline)">
+                        <svg>
+                            <use href="/gitlab-icons.svg#@GetIconName(pipeline)"></use>
+                        </svg>
+                    </span>
+                    <span>@pipeline.Id</span>
+                </a>
+                ;
+
             static string GetClassName(Pipeline pipeline)
             {
                 return "ci-status-icon ci-status-icon-" + pipeline.Status.ToString().ToLowerInvariant();
@@ -226,8 +229,8 @@
                     PipelineStatus.Running => "status_running",
                     PipelineStatus.Skipped => "status_skipped",
                     PipelineStatus.Success => "status_success",
-                    _ => "",
-                };
+                    _ => ""
+                    };
             }
         }
     }
@@ -240,4 +243,5 @@
         public string Variables { get; set; } = "";
         public int ParallelJobs { get; set; } = 1;
     }
+
 }

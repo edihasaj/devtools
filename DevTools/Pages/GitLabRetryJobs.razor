@@ -1,10 +1,10 @@
 ﻿@page "/retry-gitlab-job"
-@using System.Threading
 @using Meziantou.GitLab
-@using System.Text.RegularExpressions
-@using System.Globalization
-@using System.Diagnostics
+@using System.Threading
 @using System.Text.Json
+@using System.Text.RegularExpressions
+@using System.Diagnostics
+@using System.Globalization
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 
@@ -13,32 +13,32 @@
 <EditForm Model="form" OnValidSubmit="OnSubmit">
     <div class="form-group">
         <label>GitLab job url</label>
-        <InputText class="form-control" type="url" @bind-Value="form.JobUrl" disabled="@isProcessing" />
+        <InputText class="form-control" type="url" @bind-Value="form.JobUrl" disabled="@isProcessing"/>
     </div>
 
     <div class="form-group">
         <label>GitLab access token (<a href="@GetGenerateTokenUrl()" target="_blank">generate</a>)</label>
-        <InputText class="form-control" type="password" @bind-Value="form.GitLabToken" disabled="@isProcessing" />
+        <InputText class="form-control" type="password" @bind-Value="form.GitLabToken" disabled="@isProcessing"/>
     </div>
 
     <div class="form-group">
         <label>Number of parallel jobs (may not be supported by your GitLab instance)</label>
-        <InputNumber class="form-control" @bind-Value="form.ParallelJobs" min="1" max="20" />
+        <InputNumber class="form-control" @bind-Value="form.ParallelJobs" min="1" max="20"/>
     </div>
 
     @if (!isProcessing)
     {
-        <button type="submit" class="btn btn-primary">Start</button>
+        <button type="submit" class="btn btn-success">Start</button>
     }
     else
     {
-        <button type="submit" class="btn btn-secondary">Stop</button>
+        <button type="submit" class="btn btn-danger">Stop</button>
     }
 </EditForm>
 
 @if (jobs.Count > 0)
 {
-    <div>Total jobs: @jobs.Count<br />Failed jobs: @jobs.Where(job => job.Status == JobStatus.Failed).Count()</div>
+    <div>Total jobs: @jobs.Count<br/>Failed jobs: @jobs.Where(job => job.Status == JobStatus.Failed).Count()</div>
 
     <ul>
         @foreach (var job in jobs.Where(job => job.Status is JobStatus.Created or JobStatus.Pending or JobStatus.Running).OrderByDescending(job => job.CreatedAt))
@@ -71,7 +71,7 @@
         var lastRun = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "lastRun");
         if (lastRun != null)
         {
-            form = JsonSerializer.Deserialize<RetryGitLabJobForm>(lastRun) ?? new();
+            form = JsonSerializer.Deserialize<RetryGitLabJobForm>(lastRun) ?? new RetryGitLabJobForm();
         }
     }
 
@@ -128,7 +128,7 @@
                     return;
                 }
 
-                cts = new();
+                cts = new CancellationTokenSource();
                 var jobs = this.jobs = new List<Job>();
                 jobs.Add(job);
 
@@ -140,7 +140,6 @@
             catch (Exception ex)
             {
                 errorMessage = ex.ToString();
-                return;
             }
         }
     }
@@ -166,7 +165,7 @@
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                // Refresh in-progress jobs
+    // Refresh in-progress jobs
                 var inProgressJobs = 0;
                 for (var i = 0; i < jobs.Count; i++)
                 {
@@ -180,12 +179,12 @@
                     }
                 }
 
-                // Start new jobs
+    // Start new jobs
                 for (var i = inProgressJobs; i < form.ParallelJobs; i++)
                 {
                     try
                     {
-                        // Depending on the server you cannot retry the same job indefinitely
+    // Depending on the server you cannot retry the same job indefinitely
                         var jobToRetry = jobs.Where(job => IsCompleted(job)).OrderByDescending(j => j.Id).First();
                         jobs.Add(await client.Jobs.RetryJobAsync(project.Id, jobToRetry, cancellationToken: cancellationToken));
                     }
@@ -205,20 +204,26 @@
         }
     }
 
-    private static bool IsCompleted(Job job) => job.Status is JobStatus.Canceled or JobStatus.Failed or JobStatus.Success;
+    private static bool IsCompleted(Job job)
+    {
+        return job.Status is JobStatus.Canceled or JobStatus.Failed or JobStatus.Success;
+    }
 
     private RenderFragment<Job> RenderJob
     {
         get
         {
             return job =>
-    @<a href="@job.WebUrl" target="_blank">
-        <span class="@GetClassName(job)">
-            <svg><use href="/gitlab-icons.svg#@GetIconName(job)"></use></svg>
-        </span>
-        <span>@job.Id - @job.Name</span>
-    </a>
-    ;
+                @<a href="@job.WebUrl" target="_blank">
+                    <span class="@GetClassName(job)">
+                        <svg>
+                            <use href="/gitlab-icons.svg#@GetIconName(job)"></use>
+                        </svg>
+                    </span>
+                    <span>@job.Id - @job.Name</span>
+                </a>
+                ;
+
             static string GetClassName(Job job)
             {
                 return "ci-status-icon ci-status-icon-" + job.Status.ToString().ToLowerInvariant();
@@ -236,8 +241,8 @@
                     JobStatus.Running => "status_running",
                     JobStatus.Skipped => "status_skipped",
                     JobStatus.Success => "status_success",
-                    _ => "",
-                };
+                    _ => ""
+                    };
             }
         }
     }
@@ -248,4 +253,5 @@
         public string JobUrl { get; set; }
         public int ParallelJobs { get; set; } = 1;
     }
+
 }

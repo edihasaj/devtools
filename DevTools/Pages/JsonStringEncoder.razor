@@ -1,12 +1,13 @@
 ﻿@page "/json-string-encoder"
+@using System.Text.Json
 
 <h1>JSON String Encoder</h1>
 
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Encode">Encode to JSON string</button>
-    <button class="btn btn-secondary" @onclick="Decode">Decode JSON string</button>
+    <button class="btn btn-primary" @onclick="Encode">Encode to JSON string</button>
+    <button class="btn btn-primary" @onclick="Decode">Decode JSON string</button>
 </div>
 
 @if (result != null)
@@ -22,7 +23,7 @@
     {
         try
         {
-            result = System.Text.Json.JsonSerializer.Serialize(text);
+            result = JsonSerializer.Serialize(text);
         }
         catch (Exception ex)
         {
@@ -34,11 +35,12 @@
     {
         try
         {
-            result = System.Text.Json.JsonSerializer.Deserialize<object>(text)?.ToString();
+            result = JsonSerializer.Deserialize<object>(text)?.ToString();
         }
         catch (Exception ex)
         {
             result = ex.Message;
         }
     }
+
 }

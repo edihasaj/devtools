@@ -1,8 +1,8 @@
 ﻿@page "/hash-data"
 @using System.Text
+@using System.Diagnostics.CodeAnalysis
 @using System.IO
 @using System.Security.Cryptography
-@using System.Diagnostics.CodeAnalysis
 
 <h1>Compute hash</h1>
 
@@ -23,11 +23,11 @@
 
 <div>
     <label>Or upload a file</label>
-    <InputFile OnChange="@OnInputFileChange" />
+    <InputFile OnChange="@OnInputFileChange"/>
 </div>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Hash">Hash</button>
+    <button class="btn btn-primary" @onclick="Hash">Hash</button>
 </div>
 
 @if (resultBase64 != null)
@@ -70,8 +70,8 @@
             {
                 "sha256" => SHA256.HashData(data),
                 "sha512" => SHA512.HashData(data),
-                _ => SHA1.HashData(data),
-            };
+                _ => SHA1.HashData(data)
+                };
 
             resultBase64 = Convert.ToBase64String(hash);
             resultHexa = Convert.ToHexString(hash);
@@ -89,7 +89,8 @@
             "ascii" => Encoding.ASCII,
             "utf-16" => Encoding.Unicode,
             "utf-32" => Encoding.UTF32,
-            _ => Encoding.UTF8,
-        };
+            _ => Encoding.UTF8
+            };
     }
+
 }

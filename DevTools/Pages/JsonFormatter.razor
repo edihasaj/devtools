@@ -1,36 +1,61 @@
 ﻿@page "/json-formatter"
 @using System.Text.Json
+@inject ClipboardService _clipboardService
 
-<h1>JSON Formatter</h1>
-
-<textarea class="form-control code" @bind="text"></textarea>
+<h2>JSON Formatter</h2>
 
 <div>
-    <button class="btn btn-secondary" @onclick="() => Format(true)">Format</button>
-    <button class="btn btn-secondary" @onclick="() => Format(false)">Minify</button>
+    <textarea class="form-control code" rows="10" @bind="_text"></textarea>
 </div>
 
-@if (result != null)
+<div class="mt-2 mb-3">
+    <button class="btn btn-primary" @onclick="() => Format(true)">Format</button>
+    <button class="btn btn-primary" @onclick="() => Format(false)">Minify</button>
+</div>
+
+@if (_result != null)
 {
-    <pre class="result">@result</pre>
+    <div class="mt-2 d-flex justify-content-end">
+        <button class="btn btn-success btn-sm" @onclick="Copy">@_copyText</button>
+    </div>
+
+    <pre class="result">@_result</pre>
 }
 
 @code {
-    string text;
-    string result;
+    string _text;
+    string _result;
+    string _copyText = "Copy";
 
-    readonly JsonSerializerOptions indentedSerializerOptions = new() {WriteIndented = true};
+    readonly JsonSerializerOptions _indentedSerializerOptions = new() {WriteIndented = true};
 
     void Format(bool indented)
     {
+        if (string.IsNullOrEmpty(_text)) return;
+
         try
         {
-            var doc = JsonDocument.Parse(text, new JsonDocumentOptions {AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 1000});
-            result = JsonSerializer.Serialize(doc, indented ? indentedSerializerOptions : null);
+            _copyText = "Copy";
+
+            var doc = JsonDocument.Parse(_text, new JsonDocumentOptions {AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip, MaxDepth = 1000});
+            _result = JsonSerializer.Serialize(doc, indented ? _indentedSerializerOptions : null);
         }
         catch (Exception ex)
         {
-            result = ex.Message;
+            _result = ex.Message;
+        }
+    }
+
+    async Task Copy()
+    {
+        try
+        {
+            await _clipboardService.WriteTextAsync(_result);
+            _copyText = "Copied";
+        }
+        catch
+        {
+            Console.WriteLine("Cannot write text to clipboard");
         }
     }
 

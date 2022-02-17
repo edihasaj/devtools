@@ -1,17 +1,18 @@
 ﻿@page "/yaml-string-encoder"
+@using YamlDotNet.Serialization
 
 <h1>Yaml String Encoder</h1>
 
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Encode">Encode to YAML string</button>
-    <button class="btn btn-secondary" @onclick="Decode">Decode YAML string</button>
+    <button class="btn btn-primary" @onclick="Encode">Encode to YAML string</button>
+    <button class="btn btn-primary" @onclick="Decode">Decode YAML string</button>
 </div>
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
@@ -22,7 +23,7 @@
     {
         try
         {
-            var serializer = new YamlDotNet.Serialization.Serializer();
+            var serializer = new Serializer();
             result = serializer.Serialize(text);
         }
         catch (Exception ex)
@@ -35,7 +36,7 @@
     {
         try
         {
-            var serializer = new YamlDotNet.Serialization.Deserializer();
+            var serializer = new Deserializer();
             result = serializer.Deserialize<object>(text)?.ToString();
         }
         catch (Exception ex)
@@ -43,4 +44,5 @@
             result = ex.Message;
         }
     }
+
 }

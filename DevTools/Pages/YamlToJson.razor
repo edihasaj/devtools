@@ -1,43 +1,48 @@
 ﻿@page "/yaml-to-json"
 @using System.Text.Json
+@using System.Text.Json.Serialization
+@using YamlDotNet.Serialization
+@using System.IO
 
 <h1>Yaml to Json</h1>
 
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="ToJson">Convert to JSON</button>
+    <button class="btn btn-primary" @onclick="ToJson">Convert to JSON</button>
 </div>
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
+
     string text = @"scalar: a scalar
 scalar: 1
 sequence:
   - one
   - two
 ";
+
     string result;
 
-    JsonSerializerOptions indentedSerializerOptions = new JsonSerializerOptions
+    readonly JsonSerializerOptions indentedSerializerOptions = new()
     {
         WriteIndented = true,
-        Converters = { new DictionaryObjectConverter() },
+        Converters = {new DictionaryObjectConverter()}
     };
 
     void ToJson()
     {
         try
         {
-            var deserializer = new YamlDotNet.Serialization.Deserializer();
-            using var sr = new System.IO.StringReader(text);
+            var deserializer = new Deserializer();
+            using var sr = new StringReader(text);
             var yamlObject = deserializer.Deserialize(sr);
 
-            result = System.Text.Json.JsonSerializer.Serialize(yamlObject, indentedSerializerOptions);
+            result = JsonSerializer.Serialize(yamlObject, indentedSerializerOptions);
         }
         catch (Exception ex)
         {
@@ -45,7 +50,7 @@ sequence:
         }
     }
 
-    class DictionaryObjectConverter : System.Text.Json.Serialization.JsonConverter<Dictionary<object, object>>
+    class DictionaryObjectConverter : JsonConverter<Dictionary<object, object>>
     {
         public override Dictionary<object, object> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -72,4 +77,5 @@ sequence:
             }
         }
     }
+
 }

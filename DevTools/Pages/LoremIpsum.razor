@@ -4,16 +4,16 @@
 <h1>Lorem Ipsum</h1>
 
 <label>Words: @wordCount</label>
-<input type="range" min="0" max="50" step="1" @bind="wordCount" @bind:event="oninput" class="form-control" />
+<input type="range" min="0" max="50" step="1" @bind="wordCount" @bind:event="oninput" class="form-control"/>
 
 <label>Sentences: @sentenceCount</label>
-<input type="range" min="0" max="50" step="1" @bind="sentenceCount" @bind:event="oninput" class="form-control" />
+<input type="range" min="0" max="50" step="1" @bind="sentenceCount" @bind:event="oninput" class="form-control"/>
 
 <label>Paragrapghs: @paragraphCount</label>
-<input type="range" min="0" max="50" step="1" @bind="paragraphCount" @bind:event="oninput" class="form-control" />
+<input type="range" min="0" max="50" step="1" @bind="paragraphCount" @bind:event="oninput" class="form-control"/>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Generate">Generate</button>
+    <button class="btn btn-primary" @onclick="Generate">Generate</button>
 </div>
 
 <div class="result">
@@ -33,4 +33,5 @@
     {
         result = Lorem.Paragraphs(wordCount, sentenceCount, paragraphCount);
     }
+
 }

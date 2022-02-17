@@ -6,10 +6,10 @@
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="EncodeElement">Encode element</button>
-    <button class="btn btn-secondary" @onclick="EncodeAttribute">Encode attribute</button>
-    <button class="btn btn-secondary" @onclick="DecodeElement">Decode element</button>
-    <button class="btn btn-secondary" @onclick="DecodeAttribute">Decode attribute</button>
+    <button class="btn btn-success" @onclick="EncodeElement">Encode element</button>
+    <button class="btn btn-success" @onclick="EncodeAttribute">Encode attribute</button>
+    <button class="btn btn-primary" @onclick="DecodeElement">Decode element</button>
+    <button class="btn btn-primary" @onclick="DecodeAttribute">Decode attribute</button>
 </div>
 
 @if (result != null)
@@ -56,4 +56,5 @@
             result = "Invalid xml: " + ex.Message;
         }
     }
+
 }

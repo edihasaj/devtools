@@ -15,12 +15,12 @@
 
 <div>
     <label>Or upload a file</label>
-    <InputFile OnChange="@OnInputFileChange" />
+    <InputFile OnChange="@OnInputFileChange"/>
 </div>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Encode">Encode</button>
-    <button class="btn btn-secondary" @onclick="Decode">Decode</button>
+    <button class="btn btn-primary" @onclick="Encode">Encode</button>
+    <button class="btn btn-primary" @onclick="Decode">Decode</button>
 </div>
 
 @if (result != null)
@@ -73,7 +73,8 @@
             "ascii" => Encoding.ASCII,
             "utf-16" => Encoding.Unicode,
             "utf-32" => Encoding.UTF32,
-            _ => Encoding.UTF8,
-        };
+            _ => Encoding.UTF8
+            };
     }
+
 }

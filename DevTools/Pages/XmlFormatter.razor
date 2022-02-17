@@ -1,41 +1,53 @@
 ﻿@page "/xml-formatter"
+@using System.Xml
 @using System.IO
 @using System.Text
-@using System.Xml
+@inject ClipboardService _clipboardService
 
 <h1>XML Formatter</h1>
 
-<textarea class="form-control code" @bind="text"></textarea>
-
 <div>
-    <button class="btn btn-secondary" @onclick="() => Format(true)">Format</button>
-    <button class="btn btn-secondary" @onclick="() => Format(false)">Minify</button>
+    <textarea class="form-control code" @bind="_text"></textarea>
 </div>
 
-@if (result != null)
+<div class="mt-2 mb-3">
+    <button class="btn btn-primary" @onclick="() => Format(true)">Format</button>
+    <button class="btn btn-primary" @onclick="() => Format(false)">Minify</button>
+</div>
+
+@if (_result != null)
 {
-<pre class="result">@result</pre>
+    <div class="mt-2 d-flex justify-content-end">
+        <button class="btn btn-success btn-sm" @onclick="Copy">@_copyText</button>
+    </div>
+
+    <pre class="result">@_result</pre>
 }
 
 @code {
-    string text;
-    string result;
+    string _text;
+    string _result;
+    string _copyText = "Copy";
 
     void Format(bool indented)
     {
+        if (string.IsNullOrEmpty(_text)) return;
+
         try
         {
+            _copyText = "Copy";
+
             var originalXmlDocument = new XmlDocument();
-            originalXmlDocument.LoadXml(text ?? "");
+            originalXmlDocument.LoadXml(_text ?? "");
 
             if (!indented)
             {
-                foreach (XmlNode comment in originalXmlDocument.SelectNodes("//comment()"))
+                foreach (XmlNode comment in originalXmlDocument.SelectNodes("//comment()")!)
                 {
-                    comment.ParentNode.RemoveChild(comment);
+                    comment.ParentNode?.RemoveChild(comment);
                 }
 
-                foreach (XmlElement el in originalXmlDocument.SelectNodes("descendant::*[not(*) and not(normalize-space())]"))
+                foreach (XmlElement el in originalXmlDocument.SelectNodes("descendant::*[not(*) and not(normalize-space())]")!)
                 {
                     el.IsEmpty = true;
                 }
@@ -43,18 +55,32 @@
 
             if (!indented)
             {
-                result = originalXmlDocument.InnerXml;
+                _result = originalXmlDocument.InnerXml;
             }
             else
             {
                 var minified = new MemoryStream();
                 originalXmlDocument.Save(minified);
-                result = Encoding.UTF8.GetString(minified.ToArray());
+                _result = Encoding.UTF8.GetString(minified.ToArray());
             }
         }
         catch (Exception ex)
         {
-            result = ex.Message;
+            _result = ex.Message;
         }
     }
+
+    async Task Copy()
+    {
+        try
+        {
+            await _clipboardService.WriteTextAsync(_result);
+            _copyText = "Copied";
+        }
+        catch
+        {
+            Console.WriteLine("Cannot write text to clipboard");
+        }
+    }
+
 }

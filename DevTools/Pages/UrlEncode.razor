@@ -6,13 +6,13 @@
 <textarea class="form-control code" @bind="text"></textarea>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Encode">Encode</button>
-    <button class="btn btn-secondary" @onclick="Decode">Decode</button>
+    <button class="btn btn-primary" @onclick="Encode">Encode</button>
+    <button class="btn btn-primary" @onclick="Decode">Decode</button>
 </div>
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
@@ -28,4 +28,5 @@
     {
         result = Uri.UnescapeDataString(text ?? "");
     }
+
 }

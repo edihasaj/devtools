@@ -1,20 +1,23 @@
 ﻿@page "/crontab"
+@using NCrontab
 
 <h1>Crontab</h1>
-<p><a href="https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression">Crontab documentation</a></p>
+<p>
+    <a href="https://github.com/atifaziz/NCrontab/wiki/Crontab-Expression">Crontab documentation</a>
+</p>
 
-<input class="form-control code" list="expressions" @bind="text" />
+<input class="form-control code" list="expressions" @bind="text"/>
 <datalist id="expressions">
-    <option value="* * * * *" />
+    <option value="* * * * *"/>
 </datalist>
 
 <div>
-    <button class="btn btn-secondary" @onclick="Compute">Get occurences</button>
+    <button class="btn btn-primary" @onclick="Compute">Get occurences</button>
 </div>
 
 @if (result != null)
 {
-<pre class="result">@result</pre>
+    <pre class="result">@result</pre>
 }
 
 @code {
@@ -25,7 +28,7 @@
     {
         try
         {
-            var schedule = NCrontab.CrontabSchedule.Parse(text);
+            var schedule = CrontabSchedule.Parse(text);
             result = string.Join("\n", schedule.GetNextOccurrences(DateTime.Now, DateTime.MaxValue).Take(50));
         }
         catch (Exception ex)
@@ -33,4 +36,5 @@
             result = ex.Message;
         }
     }
+
 }
